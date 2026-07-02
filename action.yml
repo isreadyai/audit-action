@@ -1,9 +1,5 @@
 name: 'IsReadyAI — readiness audit'
-description: >-
-  Audit whether a website is readable by AI crawlers (GPTBot, ClaudeBot,
-  PerplexityBot) and AI search engines. Deep-crawls the site, fails the workflow
-  when the score drops below your threshold, writes a full report to the job
-  summary and (with an API key) uploads an authenticated CI report + repo badge.
+description: 'Audit how AI crawlers read your site: 0-100 score, full report in the job summary, CI gate on your threshold.'
 author: 'Smart Squad S.r.l. (https://smartsquad.io)'
 branding:
   icon: 'check-circle'
