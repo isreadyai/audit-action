@@ -7,6 +7,8 @@ notes on each release — do not edit by hand.
 
 ## Unreleased
 
+## v1.0.1 — 2026-07-05
+
 ## v1.0.0 — 2026-07-02
 
 - Initial extraction of the AI-readiness audit action into its own
