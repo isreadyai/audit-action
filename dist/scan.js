@@ -92,7 +92,7 @@ var require_src = __commonJS((exports, module) => {
   module.exports = { cursor, scroll, erase, beep };
 });
 
-// node_modules/.bun/@clack+core@1.4.2/node_modules/@clack/core/dist/index.mjs
+// node_modules/.bun/@clack+core@1.4.3/node_modules/@clack/core/dist/index.mjs
 import { styleText } from "node:util";
 import { stdout, stdin } from "node:process";
 import * as l from "node:readline";
@@ -439,14 +439,14 @@ function wrapAnsi(string, columns, options) {
 `);
 }
 
-// node_modules/.bun/@clack+core@1.4.2/node_modules/@clack/core/dist/index.mjs
+// node_modules/.bun/@clack+core@1.4.3/node_modules/@clack/core/dist/index.mjs
 var import_sisteransi = __toESM(require_src(), 1);
 import { ReadStream } from "node:tty";
 function findCursor(s, o, l2) {
   if (!l2.some((r) => !r.disabled))
     return s;
   const t = s + o, n = Math.max(l2.length - 1, 0), e = t < 0 ? n : t > n ? 0 : t;
-  return l2[e].disabled ? findCursor(e, o < 0 ? -1 : 1, l2) : e;
+  return l2[e]?.disabled ? findCursor(e, o < 0 ? -1 : 1, l2) : e;
 }
 function findTextCursor(s, o, l2, i) {
   const t = i.split(`
@@ -467,7 +467,7 @@ function findTextCursor(s, o, l2, i) {
     h += t[r].length + 1;
   return h + e;
 }
-var a$2 = ["up", "down", "left", "right", "space", "enter", "cancel"];
+var a$1 = ["up", "down", "left", "right", "space", "enter", "cancel"];
 var t = [
   "January",
   "February",
@@ -483,7 +483,7 @@ var t = [
   "December"
 ];
 var settings = {
-  actions: new Set(a$2),
+  actions: new Set(a$1),
   aliases: /* @__PURE__ */ new Map([
     ["k", "up"],
     ["j", "down"],
@@ -752,8 +752,8 @@ var T$1 = class T extends V {
       return styleText(["inverse", "hidden"], "_");
     if (this._cursor >= this.userInput.length)
       return `${this.userInput}█`;
-    const e = this.userInput.slice(0, this._cursor), [t2, ...i] = this.userInput.slice(this._cursor);
-    return `${e}${styleText("inverse", t2)}${i.join("")}`;
+    const e = this.userInput.slice(0, this.cursor), t2 = this.userInput.slice(this.cursor, this.cursor + 1), i = this.userInput.slice(this.cursor + 1);
+    return `${e}${styleText("inverse", t2)}${i}`;
   }
   get options() {
     return typeof this.#i == "function" ? this.#i() : this.#i;
@@ -763,7 +763,7 @@ var T$1 = class T extends V {
     const t2 = this.options;
     this.filteredOptions = [...t2], this.multiple = e.multiple === true, this.#t = typeof e.options == "function" ? e.filter : e.filter ?? g;
     let i;
-    if (e.initialValue && Array.isArray(e.initialValue) ? this.multiple ? i = e.initialValue : i = e.initialValue.slice(0, 1) : !this.multiple && this.options.length > 0 && (i = [this.options[0].value]), i)
+    if (e.initialValue && Array.isArray(e.initialValue) ? this.multiple ? i = e.initialValue : i = e.initialValue.slice(0, 1) : !this.multiple && this.options.length > 0 && (i = [this.options[0]?.value]), i)
       for (const s of i) {
         const n = t2.findIndex((o) => o.value === s);
         n !== -1 && (this.toggleSelected(s), this.#e = n);
@@ -774,7 +774,7 @@ var T$1 = class T extends V {
     return e === "\t" || this.multiple && this.isNavigating && t2.name === "space" && e !== undefined && e !== "";
   }
   #l(e, t2) {
-    const i = t2.name === "up", s = t2.name === "down", n = t2.name === "return", o = this.userInput === "" || this.userInput === "\t", u = this.#n, h = this.options, f = u !== undefined && u !== "" && h.some((r) => !r.disabled && (this.#t ? this.#t(u, r) : true));
+    const i = t2.name === "up", s = t2.name === "down", n = t2.name === "return", o = this.userInput === "" || this.userInput === "\t", u = this.#n, a = this.options, f = u !== undefined && u !== "" && a.some((r) => !r.disabled && (this.#t ? this.#t(u, r) : true));
     if (t2.name === "tab" && o && f) {
       this.userInput === "\t" && this._clearUserInput(), this._setUserInput(u, true), this.isNavigating = false;
       return;
@@ -1021,7 +1021,7 @@ class U extends V {
     this.value = C(this.#t) ?? t2.defaultValue ?? undefined;
   }
 }
-var u$1 = class u extends V {
+var u$2 = class u extends V {
   options;
   cursor = 0;
   #t;
@@ -1034,13 +1034,14 @@ var u$1 = class u extends V {
   }
   toggleValue() {
     const t2 = this.options[this.cursor];
-    if (this.value === undefined && (this.value = []), t2.group === true) {
-      const r = t2.value, e = this.getGroupItems(r);
-      this.isGroupSelected(r) ? this.value = this.value.filter((s) => e.findIndex((i) => i.value === s) === -1) : this.value = [...this.value, ...e.map((s) => s.value)], this.value = Array.from(new Set(this.value));
-    } else {
-      const r = this.value.includes(t2.value);
-      this.value = r ? this.value.filter((e) => e !== t2.value) : [...this.value, t2.value];
-    }
+    if (t2 !== undefined)
+      if (this.value === undefined && (this.value = []), t2.group === true) {
+        const r = t2.value, e = this.getGroupItems(r);
+        this.isGroupSelected(r) ? this.value = this.value.filter((s) => e.findIndex((i) => i.value === s) === -1) : this.value = [...this.value, ...e.map((s) => s.value)], this.value = Array.from(new Set(this.value));
+      } else {
+        const r = this.value.includes(t2.value);
+        this.value = r ? this.value.filter((e) => e !== t2.value) : [...this.value, t2.value];
+      }
   }
   constructor(t2) {
     super(t2, false);
@@ -1071,7 +1072,7 @@ var u$1 = class u extends V {
     });
   }
 };
-var o$1 = /* @__PURE__ */ new Set(["up", "down", "left", "right"]);
+var o = /* @__PURE__ */ new Set(["up", "down", "left", "right"]);
 
 class h extends V {
   #t = false;
@@ -1083,7 +1084,7 @@ class h extends V {
     const t2 = this.userInput;
     if (this.cursor >= t2.length)
       return `${t2}█`;
-    const s = t2.slice(0, this.cursor), r = t2[this.cursor], i = t2.slice(this.cursor + 1);
+    const s = t2.slice(0, this.cursor), r = t2.slice(this.cursor, this.cursor + 1), i = t2.slice(this.cursor + 1);
     return r === `
 ` ? `${s}█
 ${i}` : `${s}${styleText("inverse", r)}${i}`;
@@ -1130,7 +1131,7 @@ ${i}` : `${s}${styleText("inverse", r)}${i}`;
       ...t2,
       initialUserInput: s
     }, false), s !== undefined && (this._cursor = s.length), this.#s = t2.showSubmit ?? false, this.on("key", (r, i) => {
-      if (i?.name && o$1.has(i.name)) {
+      if (i?.name && o.has(i.name)) {
         this.#t = false, this.#i(i.name);
         return;
       }
@@ -1157,7 +1158,7 @@ ${i}` : `${s}${styleText("inverse", r)}${i}`;
   }
 }
 
-// node_modules/.bun/@clack+prompts@1.6.0/node_modules/@clack/prompts/dist/index.mjs
+// node_modules/.bun/@clack+prompts@1.7.0/node_modules/@clack/prompts/dist/index.mjs
 import { styleText as styleText2, stripVTControlCharacters } from "node:util";
 import process$1 from "node:process";
 var import_sisteransi2 = __toESM(require_src(), 1);
