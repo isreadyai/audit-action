@@ -34,7 +34,7 @@ var __toESM = (mod, isNodeMode, target) => {
 var __commonJS = (cb, mod) => () => (mod || cb((mod = { exports: {} }).exports, mod), mod.exports);
 var __require = /* @__PURE__ */ createRequire(import.meta.url);
 
-// node_modules/.bun/sisteransi@1.0.5/node_modules/sisteransi/src/index.js
+// node_modules/sisteransi/src/index.js
 var require_src = __commonJS((exports, module) => {
   var ESC2 = "\x1B";
   var CSI2 = `${ESC2}[`;
@@ -92,13 +92,13 @@ var require_src = __commonJS((exports, module) => {
   module.exports = { cursor, scroll, erase, beep };
 });
 
-// node_modules/.bun/@clack+core@1.4.3/node_modules/@clack/core/dist/index.mjs
+// node_modules/@clack/core/dist/index.mjs
 import { styleText } from "node:util";
 import { stdout, stdin } from "node:process";
 import * as l from "node:readline";
 import l__default from "node:readline";
 
-// node_modules/.bun/fast-string-truncated-width@3.0.3/node_modules/fast-string-truncated-width/dist/utils.js
+// node_modules/fast-string-truncated-width/dist/utils.js
 var getCodePointsLength = (() => {
   const SURROGATE_PAIR_RE = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g;
   return (input) => {
@@ -117,7 +117,7 @@ var isWideNotCJKTNotEmoji = (x) => {
   return x === 8987 || x === 9001 || x >= 12272 && x <= 12287 || x >= 12289 && x <= 12350 || x >= 12441 && x <= 12543 || x >= 12549 && x <= 12591 || x >= 12593 && x <= 12686 || x >= 12688 && x <= 12771 || x >= 12783 && x <= 12830 || x >= 12832 && x <= 12871 || x >= 12880 && x <= 19903 || x >= 65040 && x <= 65049 || x >= 65072 && x <= 65106 || x >= 65108 && x <= 65126 || x >= 65128 && x <= 65131 || x >= 127488 && x <= 127490 || x >= 127504 && x <= 127547 || x >= 127552 && x <= 127560 || x >= 131072 && x <= 196605 || x >= 196608 && x <= 262141;
 };
 
-// node_modules/.bun/fast-string-truncated-width@3.0.3/node_modules/fast-string-truncated-width/dist/index.js
+// node_modules/fast-string-truncated-width/dist/index.js
 var ANSI_RE = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]|\u001b\]8;[^;]*;.*?(?:\u0007|\u001b\u005c)/y;
 var CONTROL_RE = /[\x00-\x08\x0A-\x1F\x7F-\x9F]{1,1000}/y;
 var CJKT_WIDE_RE = /(?:(?![\uFF61-\uFF9F\uFF00-\uFFEF])[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Tangut}]){1,1000}/yu;
@@ -216,7 +216,7 @@ var getStringTruncatedWidth = (input, truncationOptions = {}, widthOptions = {})
 };
 var dist_default = getStringTruncatedWidth;
 
-// node_modules/.bun/fast-string-width@3.0.2/node_modules/fast-string-width/dist/index.js
+// node_modules/fast-string-width/dist/index.js
 var NO_TRUNCATION2 = {
   limit: Infinity,
   ellipsis: "",
@@ -227,7 +227,7 @@ var fastStringWidth = (input, options = {}) => {
 };
 var dist_default2 = fastStringWidth;
 
-// node_modules/.bun/fast-wrap-ansi@0.2.2/node_modules/fast-wrap-ansi/lib/main.js
+// node_modules/fast-wrap-ansi/lib/main.js
 var ESC = "\x1B";
 var CSI = "";
 var END_CODE = 39;
@@ -439,7 +439,7 @@ function wrapAnsi(string, columns, options) {
 `);
 }
 
-// node_modules/.bun/@clack+core@1.4.3/node_modules/@clack/core/dist/index.mjs
+// node_modules/@clack/core/dist/index.mjs
 var import_sisteransi = __toESM(require_src(), 1);
 import { ReadStream } from "node:tty";
 function findCursor(s, o, l2) {
@@ -1158,7 +1158,7 @@ ${i}` : `${s}${styleText("inverse", r)}${i}`;
   }
 }
 
-// node_modules/.bun/@clack+prompts@1.7.0/node_modules/@clack/prompts/dist/index.mjs
+// node_modules/@clack/prompts/dist/index.mjs
 import { styleText as styleText2, stripVTControlCharacters } from "node:util";
 import process$1 from "node:process";
 var import_sisteransi2 = __toESM(require_src(), 1);
@@ -4964,7 +4964,7 @@ ${result.stderr}`.match(/\d+\.\d+\.\d+/);
 // apps/cli/package.json
 var package_default = {
   name: "isreadyai",
-  version: "1.0.7",
+  version: "1.1.0",
   description: "Check if your website is ready for AI — LLM crawlability & AI-SEO audit from your terminal",
   homepage: "https://isready.ai",
   license: "MIT",
@@ -4994,8 +4994,8 @@ var package_default = {
   devDependencies: {
     "@clack/prompts": "^1.7.0",
     "@isreadyai/scanner": "workspace:*",
-    "@types/bun": "^1.3.14",
-    typescript: "~6.0.3"
+    "@types/bun": "^1.4.0",
+    typescript: "~7.0.2"
   }
 };
 // apps/cli/src/ansi.ts
