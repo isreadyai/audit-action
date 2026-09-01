@@ -4964,7 +4964,7 @@ ${result.stderr}`.match(/\d+\.\d+\.\d+/);
 // apps/cli/package.json
 var package_default = {
   name: "isreadyai",
-  version: "1.1.2",
+  version: "1.1.3",
   description: "Check if your website is ready for AI — LLM crawlability & AI-SEO audit from your terminal",
   homepage: "https://isready.ai",
   license: "MIT",
