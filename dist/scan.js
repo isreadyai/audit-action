@@ -4964,7 +4964,7 @@ ${result.stderr}`.match(/\d+\.\d+\.\d+/);
 // apps/cli/package.json
 var package_default = {
   name: "isreadyai",
-  version: "1.1.3",
+  version: "1.1.4",
   description: "Check if your website is ready for AI — LLM crawlability & AI-SEO audit from your terminal",
   homepage: "https://isready.ai",
   license: "MIT",
@@ -4991,7 +4991,7 @@ var package_default = {
     build: "bun run scripts/build.ts",
     clean: "rm -rf .turbo .next .expo dist coverage *.tsbuildinfo",
     prepack: "bun run scripts/pack-readme.ts",
-    postpack: "bun run scripts/pack-readme.ts --clean",
+    postpublish: "bun run scripts/pack-readme.ts --clean",
     test: "bun test",
     "type-check": "tsc --noEmit"
   },
