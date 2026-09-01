@@ -7,6 +7,8 @@ notes on each release — do not edit by hand.
 
 ## Unreleased
 
+## v1.0.9 — 2026-09-01
+
 ## v1.0.8 — 2026-08-28
 
 ## v1.0.7 — 2026-08-28
