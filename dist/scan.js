@@ -497,6 +497,7 @@ var settings = {
     error: "Something went wrong"
   },
   withGuide: true,
+  accessible: undefined,
   date: {
     monthNames: [...t],
     messages: {
@@ -508,6 +509,14 @@ var settings = {
     }
   }
 };
+function isAccessible(n) {
+  if (n !== undefined)
+    return n;
+  if (settings.accessible !== undefined)
+    return settings.accessible;
+  const e = process.env.ACCESSIBLE;
+  return e !== undefined && e !== "" && e !== "0" && e !== "false";
+}
 function isActionKey(n, e) {
   if (typeof n == "string")
     return settings.aliases.get(n) === e;
@@ -541,7 +550,7 @@ function block({
   input: e = stdin,
   output: r = stdout,
   overwrite: o = true,
-  hideCursor: t2 = true
+  hideCursor: n = true
 } = {}) {
   const s = l.createInterface({
     input: e,
@@ -550,10 +559,10 @@ function block({
     tabSize: 1
   });
   l.emitKeypressEvents(e, s), e instanceof ReadStream && e.isTTY && e.setRawMode(true);
-  const n = (f, { name: a, sequence: p }) => {
+  const t2 = (f, { name: a, sequence: w }) => {
     const c = String(f);
-    if (isActionKey([c, a, p], "cancel")) {
-      t2 && r.write(import_sisteransi.cursor.show), process.exit(0);
+    if (isActionKey([c, a, w], "cancel")) {
+      n && r.write(import_sisteransi.cursor.show), process.exit(0);
       return;
     }
     if (!o)
@@ -561,27 +570,25 @@ function block({
     const i = a === "return" ? 0 : -1, m = a === "return" ? -1 : 0;
     l.moveCursor(r, i, m, () => {
       l.clearLine(r, 1, () => {
-        e.once("keypress", n);
+        e.once("keypress", t2);
       });
     });
   };
-  return t2 && r.write(import_sisteransi.cursor.hide), e.once("keypress", n), () => {
-    e.off("keypress", n), t2 && r.write(import_sisteransi.cursor.show), e instanceof ReadStream && e.isTTY && !R && e.setRawMode(false), s.terminal = false, s.close();
+  return n && r.write(import_sisteransi.cursor.hide), e.once("keypress", t2), () => {
+    e.off("keypress", t2), n && r.write(import_sisteransi.cursor.show), e instanceof ReadStream && e.isTTY && !R && e.setRawMode(false), s.terminal = false, s.close();
   };
 }
 var getColumns = (e) => ("columns" in e) && typeof e.columns == "number" ? e.columns : 80;
 var getRows = (e) => ("rows" in e) && typeof e.rows == "number" ? e.rows : 20;
-function runValidation(e, n) {
+function runValidation(e, a) {
   if ("~standard" in e) {
-    const a = e["~standard"].validate(n);
-    if (a instanceof Promise)
-      throw new TypeError("Schema validation must be synchronous. Update `validate()` and remove any asynchronous logic.");
-    return a.issues?.at(0)?.message;
+    const n = e["~standard"].validate(a);
+    return n instanceof Promise ? n.then((r) => r.issues?.at(0)?.message) : n.issues?.at(0)?.message;
   }
-  return e(n);
+  return e(a);
 }
 
-class V {
+class y {
   input;
   output;
   _abortSignal;
@@ -596,9 +603,12 @@ class V {
   error = "";
   value;
   userInput = "";
+  get accessible() {
+    return isAccessible(this.opts.accessible);
+  }
   constructor(t2, e = true) {
-    const { input: i = stdin, output: n = stdout, render: s, signal: r, ...o } = t2;
-    this.opts = o, this.onKeypress = this.onKeypress.bind(this), this.close = this.close.bind(this), this.render = this.render.bind(this), this._render = s.bind(this), this._track = e, this._abortSignal = r, this.input = i, this.output = n;
+    const { input: i = stdin, output: s = stdout, render: r, signal: n, ...o } = t2;
+    this.opts = o, this.onKeypress = this.onKeypress.bind(this), this.close = this.close.bind(this), this.render = this.render.bind(this), this._render = r.bind(this), this._track = e, this._abortSignal = n, this.input = i, this.output = s;
   }
   unsubscribe() {
     this._subscribers.clear();
@@ -614,11 +624,11 @@ class V {
     this.setSubscriber(t2, { cb: e, once: true });
   }
   emit(t2, ...e) {
-    const i = this._subscribers.get(t2) ?? [], n = [];
-    for (const s of i)
-      s.cb(...e), s.once && n.push(() => i.splice(i.indexOf(s), 1));
-    for (const s of n)
-      s();
+    const i = this._subscribers.get(t2) ?? [], s = [];
+    for (const r of i)
+      r.cb(...e), r.once && s.push(() => i.splice(i.indexOf(r), 1));
+    for (const r of s)
+      r();
   }
   prompt() {
     return new Promise((t2) => {
@@ -657,15 +667,18 @@ class V {
   _clearUserInput() {
     this.rl?.write(null, { ctrl: true, name: "u" }), this._setUserInput("");
   }
-  onKeypress(t2, e) {
-    if (this._track && e.name !== "return" && (e.name && this._isActionKey(t2, e) && this.rl?.write(null, { ctrl: true, name: "h" }), this._cursor = this.rl?.cursor ?? 0, this._setUserInput(this.rl?.line)), this.state === "error" && (this.state = "active"), e?.name && (!this._track && settings.aliases.has(e.name) && this.emit("cursor", settings.aliases.get(e.name)), settings.actions.has(e.name) && this.emit("cursor", e.name)), t2 && (t2.toLowerCase() === "y" || t2.toLowerCase() === "n") && this.emit("confirm", t2.toLowerCase() === "y"), this.emit("key", t2, e), e?.name === "return" && this._shouldSubmit(t2, e)) {
-      if (this.opts.validate) {
-        const i = runValidation(this.opts.validate, this.value);
-        i && (this.error = i instanceof Error ? i.message : i, this.state = "error", this.rl?.write(this.userInput));
+  async onKeypress(t2, e) {
+    if (this.state !== "validating") {
+      if (this._track && e.name !== "return" && (e.name && this._isActionKey(t2, e) && this.rl?.write(null, { ctrl: true, name: "h" }), this._cursor = this.rl?.cursor ?? 0, this._setUserInput(this.rl?.line)), this.state === "error" && (this.state = "active"), e?.name && (!this._track && settings.aliases.has(e.name) && this.emit("cursor", settings.aliases.get(e.name)), settings.actions.has(e.name) && this.emit("cursor", e.name)), t2 && (t2.toLowerCase() === "y" || t2.toLowerCase() === "n") && this.emit("confirm", t2.toLowerCase() === "y"), this.emit("key", t2, e), e?.name === "return" && this._shouldSubmit(t2, e)) {
+        if (this.opts.validate) {
+          const i = runValidation(this.opts.validate, this.value);
+          let s;
+          i instanceof Promise ? (this.state = "validating", this.render(), s = await i) : s = i, s && (this.error = s instanceof Error ? s.message : s, this.state = "error", this.rl?.write(this.userInput));
+        }
+        this.state !== "error" && (this.state = "submit");
       }
-      this.state !== "error" && (this.state = "submit");
+      isActionKey([t2, e?.name, e?.sequence], "cancel") && (this.state = "cancel"), (this.state === "submit" || this.state === "cancel") && this.emit("finalize"), this.render(), (this.state === "submit" || this.state === "cancel") && this.close();
     }
-    isActionKey([t2, e?.name, e?.sequence], "cancel") && (this.state = "cancel"), (this.state === "submit" || this.state === "cancel") && this.emit("finalize"), this.render(), (this.state === "submit" || this.state === "cancel") && this.close();
   }
   close() {
     this.input.unpipe(), this.input.removeListener("keypress", this.onKeypress), this.output.write(`
@@ -687,28 +700,28 @@ class V {
       else {
         const e = diffLines(this._prevFrame, t2), i = getRows(this.output);
         if (this.restoreCursor(), e) {
-          const n = Math.max(0, e.numLinesAfter - i), s = Math.max(0, e.numLinesBefore - i);
-          let r = e.lines.find((o) => o >= n);
-          if (r === undefined) {
+          const s = Math.max(0, e.numLinesAfter - i), r = Math.max(0, e.numLinesBefore - i);
+          let n = e.lines.find((o) => o >= s);
+          if (n === undefined) {
             this._prevFrame = t2;
             return;
           }
           if (e.lines.length === 1) {
-            this.output.write(import_sisteransi.cursor.move(0, r - s)), this.output.write(import_sisteransi.erase.lines(1));
+            this.output.write(import_sisteransi.cursor.move(0, n - r)), this.output.write(import_sisteransi.erase.lines(1));
             const o = t2.split(`
 `);
-            this.output.write(o[r]), this._prevFrame = t2, this.output.write(import_sisteransi.cursor.move(0, o.length - r - 1));
+            this.output.write(o[n]), this._prevFrame = t2, this.output.write(import_sisteransi.cursor.move(0, o.length - n - 1));
             return;
           } else if (e.lines.length > 1) {
-            if (n < s)
-              r = n;
+            if (s < r)
+              n = s;
             else {
-              const h = r - s;
+              const h = n - r;
               h > 0 && this.output.write(import_sisteransi.cursor.move(0, h));
             }
             this.output.write(import_sisteransi.erase.down());
             const f = t2.split(`
-`).slice(r);
+`).slice(n);
             this.output.write(f.join(`
 `)), this._prevFrame = t2;
             return;
@@ -726,14 +739,14 @@ function p$1(l2, e) {
   const i = e.findIndex((s) => s.value === l2);
   return i !== -1 ? i : 0;
 }
-function g(l2, e) {
+function m(l2, e) {
   return (e.label ?? String(e.value)).toLowerCase().includes(l2.toLowerCase());
 }
-function m(l2, e) {
+function g(l2, e) {
   if (e)
     return l2 ? e : e[0];
 }
-var T$1 = class T extends V {
+var T$1 = class T extends y {
   filteredOptions;
   multiple;
   isNavigating = false;
@@ -744,6 +757,7 @@ var T$1 = class T extends V {
   #t;
   #i;
   #n;
+  #l;
   get cursor() {
     return this.#e;
   }
@@ -759,27 +773,32 @@ var T$1 = class T extends V {
     return typeof this.#i == "function" ? this.#i() : this.#i;
   }
   constructor(e) {
-    super(e), this.#i = e.options, this.#n = e.placeholder;
+    super(e), this.#i = e.options, this.#n = e.placeholder, this.#l = e.completeOnTab === true;
     const t2 = this.options;
-    this.filteredOptions = [...t2], this.multiple = e.multiple === true, this.#t = typeof e.options == "function" ? e.filter : e.filter ?? g;
+    this.filteredOptions = [...t2], this.multiple = e.multiple === true, this.#t = typeof e.options == "function" ? e.filter : e.filter ?? m;
     let i;
     if (e.initialValue && Array.isArray(e.initialValue) ? this.multiple ? i = e.initialValue : i = e.initialValue.slice(0, 1) : !this.multiple && this.options.length > 0 && (i = [this.options[0]?.value]), i)
       for (const s of i) {
-        const n = t2.findIndex((o) => o.value === s);
+        const n = t2.findIndex((r) => r.value === s);
         n !== -1 && (this.toggleSelected(s), this.#e = n);
       }
-    this.focusedValue = this.options[this.#e]?.value, this.on("key", (s, n) => this.#l(s, n)), this.on("userInput", (s) => this.#u(s));
+    this.focusedValue = this.options[this.#e]?.value, this.on("key", (s, n) => this.#u(s, n)), this.on("userInput", (s) => this.#o(s));
   }
   _isActionKey(e, t2) {
     return e === "\t" || this.multiple && this.isNavigating && t2.name === "space" && e !== undefined && e !== "";
   }
-  #l(e, t2) {
-    const i = t2.name === "up", s = t2.name === "down", n = t2.name === "return", o = this.userInput === "" || this.userInput === "\t", u = this.#n, a = this.options, f = u !== undefined && u !== "" && a.some((r) => !r.disabled && (this.#t ? this.#t(u, r) : true));
-    if (t2.name === "tab" && o && f) {
+  #u(e, t2) {
+    const i = t2.name === "up", s = t2.name === "down", n = t2.name === "return", r = this.userInput === "" || this.userInput === "\t", u = this.#n, d = this.options, c = u !== undefined && u !== "" && d.some((o) => !o.disabled && (this.#t ? this.#t(u, o) : true));
+    if (t2.name === "tab" && r && c) {
       this.userInput === "\t" && this._clearUserInput(), this._setUserInput(u, true), this.isNavigating = false;
       return;
     }
-    i || s ? (this.#e = findCursor(this.#e, i ? -1 : 1, this.filteredOptions), this.focusedValue = this.filteredOptions[this.#e]?.value, this.multiple || (this.selectedValues = [this.focusedValue]), this.isNavigating = true) : n ? this.value = m(this.multiple, this.selectedValues) : this.multiple ? this.focusedValue !== undefined && (t2.name === "tab" || this.isNavigating && t2.name === "space") ? this.toggleSelected(this.focusedValue) : this.isNavigating = false : (this.focusedValue && (this.selectedValues = [this.focusedValue]), this.isNavigating = false);
+    if (t2.name === "tab" && this.#l && !this.multiple && this.focusedValue !== undefined) {
+      const o = String(this.focusedValue);
+      this._clearUserInput(), this._setUserInput(o, true), this.isNavigating = false;
+      return;
+    }
+    i || s ? (this.#e = findCursor(this.#e, i ? -1 : 1, this.filteredOptions), this.focusedValue = this.filteredOptions[this.#e]?.value, this.multiple || (this.selectedValues = [this.focusedValue]), this.isNavigating = true) : n ? this.value = g(this.multiple, this.selectedValues) : this.multiple ? this.focusedValue !== undefined && (t2.name === "tab" || this.isNavigating && t2.name === "space") ? this.toggleSelected(this.focusedValue) : this.isNavigating = false : (this.focusedValue && (this.selectedValues = [this.focusedValue]), this.isNavigating = false);
   }
   deselectAll() {
     this.selectedValues = [];
@@ -787,7 +806,7 @@ var T$1 = class T extends V {
   toggleSelected(e) {
     this.filteredOptions.length !== 0 && (this.multiple ? this.selectedValues.includes(e) ? this.selectedValues = this.selectedValues.filter((t2) => t2 !== e) : this.selectedValues = [...this.selectedValues, e] : this.selectedValues = [e]);
   }
-  #u(e) {
+  #o(e) {
     if (e !== this.#s) {
       this.#s = e;
       const t2 = this.options;
@@ -862,7 +881,7 @@ function T2(r, t2, i, s) {
   };
 }
 
-class U extends V {
+class U extends y {
   #i;
   #o;
   #t;
@@ -988,13 +1007,13 @@ class U extends V {
         }
       }
       this.inlineError = "", this.#t[e.type] = l2;
-      const y = l2.includes("_") ? undefined : b(this.#t);
-      if (y) {
-        const { year: h, month: d } = y, g2 = c(h, d);
+      const y2 = l2.includes("_") ? undefined : b(this.#t);
+      if (y2) {
+        const { year: h, month: d } = y2, g2 = c(h, d);
         this.#t = {
           year: String(Math.max(0, Math.min(9999, h))).padStart(4, "0"),
           month: String(Math.max(1, Math.min(12, d))).padStart(2, "0"),
-          day: String(Math.max(1, Math.min(g2, y.day))).padStart(2, "0")
+          day: String(Math.max(1, Math.min(g2, y2.day))).padStart(2, "0")
         };
       }
       this.#r();
@@ -1021,7 +1040,7 @@ class U extends V {
     this.value = C(this.#t) ?? t2.defaultValue ?? undefined;
   }
 }
-var u$2 = class u extends V {
+var u$2 = class u extends y {
   options;
   cursor = 0;
   #t;
@@ -1074,7 +1093,7 @@ var u$2 = class u extends V {
 };
 var o = /* @__PURE__ */ new Set(["up", "down", "left", "right"]);
 
-class h extends V {
+class h extends y {
   #t = false;
   #s;
   focused = "editor";
@@ -1215,9 +1234,9 @@ var log = {
     const g2 = Array.isArray(s) ? s : s.split(`
 `);
     if (g2.length > 0) {
-      const [i, ...y] = g2;
+      const [i, ...y2] = g2;
       i.length > 0 ? t2.push(`${O}${i}`) : t2.push(o2 ? e : "");
-      for (const p2 of y)
+      for (const p2 of y2)
         p2.length > 0 ? t2.push(`${u3}${p2}`) : t2.push(o2 ? r2 : "");
     }
     m2.write(`${t2.join(`
@@ -1276,7 +1295,7 @@ var spinner = ({
     process.on("uncaughtExceptionMonitor", f2), process.on("unhandledRejection", f2), process.on("SIGINT", i), process.on("SIGTERM", i), process.on("exit", g2), m2 && m2.addEventListener("abort", i);
   }, H = () => {
     process.removeListener("uncaughtExceptionMonitor", f2), process.removeListener("unhandledRejection", f2), process.removeListener("SIGINT", i), process.removeListener("SIGTERM", i), process.removeListener("exit", g2), m2 && m2.removeEventListener("abort", i);
-  }, y = () => {
+  }, y2 = () => {
     if (p2 === undefined)
       return;
     u3 && n2.write(`
@@ -1297,7 +1316,7 @@ var spinner = ({
     A(), T3 = setInterval(() => {
       if (u3 && s === p2)
         return;
-      y(), p2 = s;
+      y2(), p2 = s;
       const o2 = k(E[r2]);
       let v;
       if (u3)
@@ -1317,7 +1336,7 @@ var spinner = ({
   }, a2 = (e = "", r2 = 0, t2 = false) => {
     if (!d)
       return;
-    d = false, clearInterval(T3), y();
+    d = false, clearInterval(T3), y2();
     const o2 = r2 === 0 ? styleText2("green", S_STEP_SUBMIT) : r2 === 1 ? styleText2("red", S_STEP_CANCEL) : styleText2("red", S_STEP_ERROR);
     s = e ?? s, t2 || (l2 === "timer" ? n2.write(`${o2}  ${s} ${_2(w)}
 `) : n2.write(`${o2}  ${s}
@@ -4964,7 +4983,7 @@ ${result.stderr}`.match(/\d+\.\d+\.\d+/);
 // apps/cli/package.json
 var package_default = {
   name: "isreadyai",
-  version: "1.1.4",
+  version: "1.2.0",
   description: "Check if your website is ready for AI — LLM crawlability & AI-SEO audit from your terminal",
   homepage: "https://isready.ai",
   license: "MIT",
@@ -4996,9 +5015,9 @@ var package_default = {
     "type-check": "tsc --noEmit"
   },
   devDependencies: {
-    "@clack/prompts": "^1.7.0",
+    "@clack/prompts": "^1.8.1",
     "@isreadyai/scanner": "workspace:*",
-    "@types/bun": "^1.4.0",
+    "@types/bun": "^1.4.2",
     typescript: "~7.0.2"
   }
 };

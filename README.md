@@ -199,8 +199,8 @@ Releases follow semantic versioning; the `v1` tag always points at the latest
 
 ## How it works
 
-The audit is powered by the open-source (MIT) isready.ai engine and CLI. This
-repository ships a pre-bundled, node-target build of that engine — it is generated
+The audit is powered by the MIT scanner and CLI. The web dashboard is source-available under PolyForm Shield 1.0.0. This
+repository ships a pre-bundled, node-target build of that engine. It is generated
 from the [`isreadyai/isreadyai`](https://github.com/isreadyai/isreadyai) monorepo,
 so please **open issues and PRs there**, not against the generated files here.
 
@@ -210,7 +210,7 @@ methodology in the [monorepo README](https://github.com/isreadyai/isreadyai#the-
 ## Author
 
 <p>
-  <a href="https://x.com/massimodeluisa"><img src="https://img.shields.io/badge/X-@massimodeluisa-000000?style=flat-square&logo=x" alt="X" /></a>
+  <a href="https://x.com/massimodeluisa"><img src="https://img.shields.io/badge/@massimodeluisa-000000?style=flat-square&logo=x" alt="X" /></a>
   <a href="https://github.com/isreadyai"><img src="https://img.shields.io/badge/GitHub-isreadyai-181717?style=flat-square&logo=github" alt="GitHub" /></a>
 </p>
 
